@@ -101,6 +101,7 @@ class Language(object):
     def __init__(self, code, env=None):
         self.code = code
         self.env = env
+        print(code, env)
         if code and code in MISSING_LOCALES:
             self.locale = Locale.parse(MISSING_LOCALES[code]['plural_rule'], sep='-')
         elif code:
@@ -168,6 +169,7 @@ def resolve_locale(code, env):
     """Return a ``Language`` instance for a locale code.
 
     Deals with incorrect Babel locale values."""
+
     try:
         return Language(code, env)
     except UnknownLocaleError:
@@ -504,6 +506,7 @@ class Environment(object):
         """
         languages = []
         for name in os.listdir(self.resource_dir):
+            print(name)
             match = self.LANG_DIR.match(name)
             if not match:
                 continue
@@ -515,6 +518,8 @@ class Environment(object):
                 code = ANDROID_LOCALE_MAPPING['from'][pseudo_code]
             else:
                 code = pseudo_code
+            
+            print("FINDME")
             language = resolve_locale(code, self)
             if language:
                 languages.append(language)
@@ -539,6 +544,7 @@ class Environment(object):
             'locale': '*',
         }
 
+        print("hello world")
         # Temporarily switch to the gettext directory. This allows us
         # to simply call glob() using the relative pattern, rather than
         # having to deal with making a full path, and then later on
@@ -549,7 +555,6 @@ class Environment(object):
         os.chdir(self.gettext_dir)
         try:
             list = glob.glob(glob_pattern)
-
             # We now have a list of matching .po files, but now idea
             # which languages they represent, because we don't know
             # which part of the filename is the locale. To solve this,

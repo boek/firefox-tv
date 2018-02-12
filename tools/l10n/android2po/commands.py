@@ -57,7 +57,7 @@ def xml2string(tree, action):
 def read_xml(action, filename, **kw):
     """Wrapper around the base read_xml() that pipes warnings
     into the given action.
-
+`
     Also handles errors and returns false if the file is invalid.
     """
     try:
@@ -116,11 +116,16 @@ def list_languages(source, env, writer):
     with the environment directly, as this outputs helpful
     diagnostic messages along the way.
     """
+
     assert source in ('gettext', 'android')
+    print(source)
     languages = getattr(
         env,
         'get_gettext_languages' if source == 'gettext' else 'get_android_languages')()
+
     lstr = ", ".join(map(str, languages))
+    print(languages)
+    print(lstr)
     writer.action('info',
                   "Found %d language(s): %s" % (len(languages), lstr))
     writer.message('List of languages was based on %s' % (
@@ -363,6 +368,7 @@ class InitCommand(Command):
         one .po file, i.e. on export, multiple xml files needs to be able
         to yield into a single .po target.
         """
+        print(self.env.xmlfiles)
         for kind in self.env.xmlfiles:
             language_po = language.po(kind)
             language_xml = language.xml(kind)
@@ -393,6 +399,7 @@ class InitCommand(Command):
 
     def yield_languages(self, env, source='android'):
         if env.options.language:
+            print("1")
             for code in env.options.language:
                 if code == '-':
                     # This allows specifying - to only build the template
@@ -402,6 +409,7 @@ class InitCommand(Command):
                     yield language
 
         else:
+            print("2")
             for l in list_languages(source, env, self.w):
                 yield l
 
@@ -416,7 +424,12 @@ class InitCommand(Command):
         # Only show [exists] actions if a specific language was requested.
         show_exists = not bool(env.options.language)
 
-        for language in self.yield_languages(env):
+        print("-----")
+        print(list(self.yield_languages(env, "gettext")))
+        print("-----")
+        for language in self.yield_languages(env, "gettext"):
+            language.code = language.code.replace("-", "-r")
+            
             # For each language, generate a .po file. In case a language
             # already exists (that is, it's xml files exist, use the
             # existing translations for the new gettext catalog).
@@ -427,8 +440,8 @@ class InitCommand(Command):
                  lang_files) in self._iterate(language, require_translation=False):
                 if self.generate_po(target_po, template_data, action,
                                     lang_data, lang_files,
-                                    update=False,
-                                    ignore_exists=show_exists):
+                                    update=True,
+                                    ignore_exists=False):
                     something_done = True
 
             # Also for each language, generate the empty .xml resource files.
@@ -436,7 +449,7 @@ class InitCommand(Command):
             for kind in self.env.xmlfiles:
                 if write_file(self, language.xml(kind),
                               """<?xml version='1.0' encoding='utf-8'?>\n<resources>\n</resources>""",
-                              update=False, ignore_exists=show_exists):
+                              update=True, ignore_exists=False):
                     something_done = True
 
         if not something_done:
@@ -474,6 +487,7 @@ class ExportCommand(InitCommand):
 
         for language in self.yield_languages(env, 'gettext'):
             for kind in self.env.xmlfiles:
+                print(self.env.xmlfiles)
                 target_po = language.po(kind)
                 if not target_po.exists():
                     w.action('skipped', target_po)
