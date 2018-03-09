@@ -45,8 +45,7 @@
         android:id="@+id/cursorView"
         android:layout_width="@dimen/remote_cursor_size"
         android:layout_height="@dimen/remote_cursor_size"
-        android:layout_gravity="top|start"
-        />
+        android:layout_gravity="top|start" />
 
     <org.mozilla.focus.widget.FirefoxProgressBar
         android:id="@+id/progressBar"
